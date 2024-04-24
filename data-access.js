@@ -23,6 +23,17 @@ async function getCustomers() {
   }
 }
 
+async function addCustomer(newCustomer) {
+  try {
+    const insertResult = await collection.insertOne(newCustomer);
+    // return array [status, id, errMessage]
+    return ["success", insertResult.insertedId, null];
+  } catch (err) {
+    console.log(err.message);
+    return ["fail", null, err.message];
+  }
+}
+
 async function resetCustomers() {
   let data = [
     { id: 0, name: "Mary Jackson", email: "maryj@abc.com", password: "maryj" },
@@ -56,4 +67,4 @@ async function resetCustomers() {
 }
 
 dbStartup();
-module.exports = { getCustomers, resetCustomers };
+module.exports = { getCustomers, resetCustomers, addCustomer };
