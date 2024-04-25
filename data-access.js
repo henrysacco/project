@@ -1,17 +1,21 @@
-// data-access.js file
+// Importing required module
 const MongoClient = require("mongodb").MongoClient;
+
+// Database and collection configuration
 const dbName = "custdb";
 const baseUrl = "mongodb://127.0.0.1:27017";
 const collectionName = "customers";
 const connectString = baseUrl + "/" + dbName;
 let collection;
 
+// Function to initialize database connection
 async function dbStartup() {
   const client = new MongoClient(connectString);
   await client.connect();
   collection = client.db(dbName).collection(collectionName);
 }
 
+// Function to fetch all customers
 async function getCustomers() {
   try {
     const customers = await collection.find().toArray();
@@ -23,6 +27,7 @@ async function getCustomers() {
   }
 }
 
+// Function to add a new customer
 async function addCustomer(newCustomer) {
   try {
     const insertResult = await collection.insertOne(newCustomer);
@@ -34,6 +39,7 @@ async function addCustomer(newCustomer) {
   }
 }
 
+// Function to reset customer data
 async function resetCustomers() {
   let data = [
     { id: 0, name: "Mary Jackson", email: "maryj@abc.com", password: "maryj" },
@@ -51,6 +57,7 @@ async function resetCustomers() {
     },
   ];
 
+  // Deletes the recreates standard data above
   try {
     await collection.deleteMany({});
     await collection.insertMany(data);
@@ -66,6 +73,7 @@ async function resetCustomers() {
   }
 }
 
+// Function to fetch a customer by ID
 async function getCustomerById(id) {
   try {
     const customer = await collection.findOne({ id: +id });
@@ -80,20 +88,7 @@ async function getCustomerById(id) {
   }
 }
 
-async function getCustomerById(id) {
-  try {
-    const customer = await collection.findOne({ id: +id });
-    // return array [customer, errMessage]
-    if (!customer) {
-      return [null, "invalid customer number"];
-    }
-    return [customer, null];
-  } catch (err) {
-    console.log(err.message);
-    return [null, err.message];
-  }
-}
-
+// Function to update a customer
 async function updateCustomer(updatedCustomer) {
   try {
     const filter = { id: updatedCustomer.id };
@@ -107,6 +102,7 @@ async function updateCustomer(updatedCustomer) {
   }
 }
 
+// Function to delete a customer by ID
 async function deleteCustomerById(id) {
   try {
     const deleteResult = await collection.deleteOne({ id: +id });
@@ -124,7 +120,10 @@ async function deleteCustomerById(id) {
   }
 }
 
+// Starts the DB connection
 dbStartup();
+
+// Exports functions
 module.exports = {
   getCustomerById,
   getCustomers,

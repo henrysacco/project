@@ -1,4 +1,3 @@
-// server.js file
 const express = require("express");
 const da = require("./data-access");
 const path = require("path"); // for handling file paths
@@ -15,6 +14,7 @@ app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });
 
+// Endpoint to retrieve all customers
 app.get("/customers", async (req, res) => {
   const [cust, err] = await da.getCustomers();
   if (cust) {
@@ -25,6 +25,7 @@ app.get("/customers", async (req, res) => {
   }
 });
 
+// Endpoint to reset customers to default
 app.get("/reset", async (req, res) => {
   const [result, err] = await da.resetCustomers();
   if (result) {
@@ -35,6 +36,7 @@ app.get("/reset", async (req, res) => {
   }
 });
 
+// Endpoint to retrieve customers by ID
 app.get("/customers/:id", async (req, res) => {
   const id = req.params.id;
   // return array [customer, errMessage]
@@ -47,6 +49,7 @@ app.get("/customers/:id", async (req, res) => {
   }
 });
 
+// Endpoint to update an existing customer
 app.put("/customers/:id", async (req, res) => {
   const id = req.params.id;
   const updatedCustomer = req.body;
@@ -66,6 +69,7 @@ app.put("/customers/:id", async (req, res) => {
   //}
 });
 
+// Endpoint to add a new customer
 app.post("/customers", async (req, res) => {
   const newCustomer = req.body;
   // Check if the request body is missing
@@ -87,6 +91,7 @@ app.post("/customers", async (req, res) => {
   }
 });
 
+// Endpoint to delete a customer by ID
 app.delete("/customers/:id", async (req, res) => {
   const id = req.params.id;
   // return array [message, errMessage]
