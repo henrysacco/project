@@ -80,5 +80,38 @@ async function getCustomerById(id) {
   }
 }
 
+async function getCustomerById(id) {
+  try {
+    const customer = await collection.findOne({ id: +id });
+    // return array [customer, errMessage]
+    if (!customer) {
+      return [null, "invalid customer number"];
+    }
+    return [customer, null];
+  } catch (err) {
+    console.log(err.message);
+    return [null, err.message];
+  }
+}
+
+async function updateCustomer(updatedCustomer) {
+  try {
+    const filter = { id: updatedCustomer.id };
+    const setData = { $set: updatedCustomer };
+    const updateResult = await collection.updateOne(filter, setData);
+    // return array [message, errMessage]
+    return ["one record updated", null];
+  } catch (err) {
+    console.log(err.message);
+    return [null, err.message];
+  }
+}
+
 dbStartup();
-module.exports = { getCustomerById, getCustomers, resetCustomers, addCustomer };
+module.exports = {
+  getCustomerById,
+  getCustomers,
+  resetCustomers,
+  addCustomer,
+  updateCustomer,
+};
