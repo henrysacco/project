@@ -19,7 +19,6 @@ async function dbStartup() {
 async function getCustomers() {
   try {
     const customers = await collection.find().toArray();
-    // throw { message: "an error occured" };
     return [customers, null];
   } catch (err) {
     console.log(err.message);
@@ -31,7 +30,6 @@ async function getCustomers() {
 async function addCustomer(newCustomer) {
   try {
     const insertResult = await collection.insertOne(newCustomer);
-    // return array [status, id, errMessage]
     return ["success", insertResult.insertedId, null];
   } catch (err) {
     console.log(err.message);
@@ -57,7 +55,7 @@ async function resetCustomers() {
     },
   ];
 
-  // Deletes the recreates standard data above
+  // Deletes the recreated standard data above
   try {
     await collection.deleteMany({});
     await collection.insertMany(data);
@@ -77,11 +75,24 @@ async function resetCustomers() {
 async function getCustomerById(id) {
   try {
     const customer = await collection.findOne({ id: +id });
-    // return array [customer, errMessage]
     if (!customer) {
       return [null, "invalid customer number"];
     }
     return [customer, null];
+  } catch (err) {
+    console.log(err.message);
+    return [null, err.message];
+  }
+}
+
+// Function to find customer by string
+async function findCustomers(filterObject) {
+  try {
+    const customers = await collection.find(filterObject).toArray();
+    if (!customers || customers.length == 0) {
+      return [null, "no customer documents found"];
+    }
+    return [customers, null];
   } catch (err) {
     console.log(err.message);
     return [null, err.message];
@@ -131,4 +142,5 @@ module.exports = {
   addCustomer,
   updateCustomer,
   deleteCustomerById,
+  findCustomers,
 };

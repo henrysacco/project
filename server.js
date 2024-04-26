@@ -1,8 +1,8 @@
 const express = require("express");
 const da = require("./data-access");
-const path = require("path"); // for handling file paths
+const path = require("path");
 const app = express();
-const port = process.env.PORT || 4000; // use env var or default to 4000
+const port = process.env.PORT || 4000;
 const bodyParser = require("body-parser");
 
 app.use(bodyParser.json());
@@ -12,6 +12,32 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
+});
+
+app.get("/customers/find/", async (req, res) => {
+  let id = +req.query.id;
+  let email = req.query.email;
+  let password = req.query.password;
+  let query = null;
+  if (id > -1) {
+    query = { id: id };
+  } else if (email) {
+    query = { email: email };
+  } else if (password) {
+    query = { password: password };
+  }
+  if (query) {
+    const [customers, err] = await da.findCustomers(query);
+    if (customers) {
+      res.send(customers);
+    } else {
+      res.status(404);
+      res.send(err);
+    }
+  } else {
+    res.status(400);
+    res.send("query string is required");
+  }
 });
 
 // Endpoint to retrieve all customers
@@ -39,7 +65,6 @@ app.get("/reset", async (req, res) => {
 // Endpoint to retrieve customers by ID
 app.get("/customers/:id", async (req, res) => {
   const id = req.params.id;
-  // return array [customer, errMessage]
   const [cust, err] = await da.getCustomerById(id);
   if (cust) {
     res.send(cust);
@@ -58,7 +83,6 @@ app.put("/customers/:id", async (req, res) => {
   // res.send("missing request body");
   //} else {
   delete updatedCustomer._id;
-  // return array format [message, errMessage]
   const [message, errMessage] = await da.updateCustomer(updatedCustomer);
   if (message) {
     res.send(message);
@@ -72,16 +96,13 @@ app.put("/customers/:id", async (req, res) => {
 // Endpoint to add a new customer
 app.post("/customers", async (req, res) => {
   const newCustomer = req.body;
-  // Check if the request body is missing
   if (Object.keys(req.body).length === 0) {
     res.status(400).send("missing request body");
   } else {
-    // Check if the required properties are present
     if (!newCustomer.name || !newCustomer.email) {
       res.status(400).send("missing required properties");
       return;
     }
-    // Handle the request
     const [status, id, errMessage] = await da.addCustomer(newCustomer);
     if (status === "success") {
       res.status(201).send({ ...newCustomer, _id: id });
@@ -94,7 +115,6 @@ app.post("/customers", async (req, res) => {
 // Endpoint to delete a customer by ID
 app.delete("/customers/:id", async (req, res) => {
   const id = req.params.id;
-  // return array [message, errMessage]
   const [message, errMessage] = await da.deleteCustomerById(id);
   if (message) {
     res.send(message);
