@@ -1,9 +1,11 @@
 const express = require("express");
+const bodyParser = require("body-parser");
 const da = require("./data-access");
 const path = require("path");
+const checkApiKey = require("./security").checkApiKey;
+const getNewApiKey = require("./security").getNewApiKey;
 const app = express();
 const port = process.env.PORT || 4000;
-const bodyParser = require("body-parser");
 
 app.use(bodyParser.json());
 
@@ -14,7 +16,28 @@ app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });
 
-app.get("/customers/find/", async (req, res) => {
+app.get("/apikey", async (req, res) => {
+  let email = req.query.email;
+  if (email) {
+    const newApiKey = getNewApiKey(email);
+    res.send(newApiKey);
+  } else {
+    res.status(400);
+    res.send("an email query param is required");
+  }
+});
+
+app.get("/customers", checkApiKey, async (req, res) => {
+  const [cust, err] = await da.getCustomers();
+  if (cust) {
+    res.send(cust);
+  } else {
+    res.status(500);
+    res.send(err);
+  }
+});
+
+app.get("/customers/find/", checkApiKey, async (req, res) => {
   let id = +req.query.id;
   let email = req.query.email;
   let password = req.query.password;
@@ -41,7 +64,7 @@ app.get("/customers/find/", async (req, res) => {
 });
 
 // Endpoint to retrieve all customers
-app.get("/customers", async (req, res) => {
+app.get("/customers", checkApiKey, async (req, res) => {
   const [cust, err] = await da.getCustomers();
   if (cust) {
     res.send(cust);
@@ -52,7 +75,7 @@ app.get("/customers", async (req, res) => {
 });
 
 // Endpoint to reset customers to default
-app.get("/reset", async (req, res) => {
+app.get("/reset", checkApiKey, async (req, res) => {
   const [result, err] = await da.resetCustomers();
   if (result) {
     res.send(result);
@@ -63,7 +86,7 @@ app.get("/reset", async (req, res) => {
 });
 
 // Endpoint to retrieve customers by ID
-app.get("/customers/:id", async (req, res) => {
+app.get("/customers/:id", checkApiKey, async (req, res) => {
   const id = req.params.id;
   const [cust, err] = await da.getCustomerById(id);
   if (cust) {
@@ -75,7 +98,7 @@ app.get("/customers/:id", async (req, res) => {
 });
 
 // Endpoint to update an existing customer
-app.put("/customers/:id", async (req, res) => {
+app.put("/customers/:id", checkApiKey, async (req, res) => {
   const id = req.params.id;
   const updatedCustomer = req.body;
   //if (updatedCustomer === null || req.body != {}) {
@@ -94,7 +117,7 @@ app.put("/customers/:id", async (req, res) => {
 });
 
 // Endpoint to add a new customer
-app.post("/customers", async (req, res) => {
+app.post("/customers", checkApiKey, async (req, res) => {
   const newCustomer = req.body;
   if (Object.keys(req.body).length === 0) {
     res.status(400).send("missing request body");
@@ -113,7 +136,7 @@ app.post("/customers", async (req, res) => {
 });
 
 // Endpoint to delete a customer by ID
-app.delete("/customers/:id", async (req, res) => {
+app.delete("/customers/:id", checkApiKey, async (req, res) => {
   const id = req.params.id;
   const [message, errMessage] = await da.deleteCustomerById(id);
   if (message) {
